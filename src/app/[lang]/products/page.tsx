@@ -125,14 +125,8 @@ export default function ProductsPage() {
         }
     }
 
-    // Calculate display price with 20% markup on scraped products
+    // Price is already calculated with markup from API
     const getDisplayPrice = (product: Product) => {
-        // For scraped products, add 20% markup to the scraped price
-        if (product.sourceUrl && product.sourceUrl.includes('scraped')) {
-            const scrapedPrice = product.price;
-            const markupAmount = scrapedPrice * 0.2;
-            return scrapedPrice + markupAmount;
-        }
         return product.price;
     };
 
@@ -541,11 +535,6 @@ export default function ProductsPage() {
                                     <div className="mt-0.5 flex items-center gap-2">
                                         <span className={`${p.compareAt ? "text-rose-600 font-semibold" : "text-black font-semibold"}`}>
                                             {formatPrice(getDisplayPrice(p))}
-                                            {p.sourceUrl && p.sourceUrl.includes('scraped') && (
-                                                <span className="ml-1 text-xs text-gray-500">
-                                                    (+20% markup)
-                                                </span>
-                                            )}
                                         </span>
                                         {p.compareAt && (
                                             <span className="text-xs text-black line-through">{formatPrice(p.compareAt)}</span>

@@ -18,19 +18,19 @@ export default function CartView({ lang }: { lang: "en" | "ja" }) {
 				<div className="text-gray-600">{t.empty}</div>
 			) : (
 				<>
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                         {/* Items table */}
                         <div className="lg:col-span-2">
                             <div className="hidden md:grid grid-cols-12 px-4 pb-3 text-base text-gray-700">
-                                <div className="col-span-6">Product</div>
+                                <div className="col-span-5">Product</div>
                                 <div className="col-span-2 text-center">Price</div>
                                 <div className="col-span-2 text-center">Quantity</div>
-                                <div className="col-span-2 text-right">Total</div>
+                                <div className="col-span-3 text-right">Total</div>
                             </div>
                             <div className="divide-y rounded-2xl border bg-white shadow-sm">
                                 {state.items.map((item) => (
                                     <div key={item.id} className="grid grid-cols-12 items-center gap-4 p-4">
-                                        <div className="col-span-12 md:col-span-6 flex items-center gap-4 min-w-0">
+                                        <div className="col-span-12 md:col-span-5 flex items-center gap-4 min-w-0">
                                             <div className="h-20 w-20 overflow-hidden rounded-lg border bg-gray-50 shrink-0">
                                                 <Image src={item.image || "/placeholder.jpg"} alt={item.title || "Product"} width={80} height={80} className="h-full w-full object-cover" />
                                             </div>
@@ -41,13 +41,13 @@ export default function CartView({ lang }: { lang: "en" | "ja" }) {
                                         </div>
                                         <div className="col-span-4 md:col-span-2 text-center text-base">¥{item.price.toLocaleString()} JPY</div>
                                         <div className="col-span-4 md:col-span-2 flex items-center justify-center">
-                                            <div className="inline-flex items-center rounded-full border px-5 py-3 min-w-[160px] justify-between">
+                                            <div className="inline-flex items-center rounded-full border px-4 py-3 min-w-[140px] justify-between">
                                                 <button className="h-7 w-7 inline-flex items-center justify-center rounded-full hover:bg-gray-100 text-base" onClick={() => dispatch({ type: "setQty", id: item.id, quantity: Math.max(1, item.quantity - 1) })}>-</button>
                                                 <span className="px-2 text-base min-w-[2.25rem] text-center">{item.quantity}</span>
                                                 <button className="h-7 w-7 inline-flex items-center justify-center rounded-full hover:bg-gray-100 text-base" onClick={() => dispatch({ type: "setQty", id: item.id, quantity: item.quantity + 1 })}>+</button>
                                             </div>
                                         </div>
-                                        <div className="col-span-4 md:col-span-2 text-right text-lg font-semibold">¥{(item.price * item.quantity).toLocaleString()} JPY</div>
+                                        <div className="col-span-4 md:col-span-3 text-right text-lg font-semibold pr-2">¥{(item.price * item.quantity).toLocaleString()} JPY</div>
                                     </div>
                                 ))}
                             </div>
@@ -57,7 +57,7 @@ export default function CartView({ lang }: { lang: "en" | "ja" }) {
                             <div className="rounded-2xl border bg-white p-5 space-y-4 shadow-sm">
                                 <div className="flex items-center justify-between text-base">
                                     <span className="text-gray-700">{t.subtotal}</span>
-                                    <span className="text-lg font-semibold">$ {subtotal.toFixed(2)}</span>
+                                    <span className="text-lg font-semibold">¥ {subtotal.toLocaleString()}</span>
                                 </div>
                                 <div className="text-sm text-gray-500">Taxes and shipping calculated at checkout</div>
                                 <Link href={`/${lang}/checkout`} className="block rounded-full bg-black px-5 py-3.5 text-center text-lg font-semibold text-white transition-colors hover:bg-indigo-700">

@@ -40,7 +40,7 @@ export default function HeroCarousel({ lang }: HeroCarouselProps) {
       title: "Pokemon Halloween Collection",
       subtitle: "Limited Quantity",
       ctaText: "View Collection",
-      ctaLink: `/${lang}/products?category=pokemon`,
+      ctaLink: `/${lang}/products`,
       badge: "Limited Quantity"
     },
     {
@@ -49,7 +49,7 @@ export default function HeroCarousel({ lang }: HeroCarouselProps) {
       title: "Starbucks Tsukimi Collection",
       subtitle: "Limited Quantity",
       ctaText: "View Collection",
-      ctaLink: `/${lang}/products?category=starbucks`,
+      ctaLink: `/${lang}/products`,
       badge: "Limited Quantity"
     }
   ];
@@ -88,7 +88,7 @@ export default function HeroCarousel({ lang }: HeroCarouselProps) {
       <div className="grid grid-cols-1 lg:grid-cols-6 gap-3 lg:gap-4">
         {/* Main Hero Slide - Takes up 4 columns (much wider) */}
         <div className="lg:col-span-4 relative">
-          <div className="relative h-[500px] lg:h-[650px] overflow-hidden rounded-2xl">
+          <div className="relative h-[650px] lg:h-[650px] overflow-hidden rounded-2xl">
             <div className="relative h-full w-full">
               {mainSlides.map((slide, index) => (
                 <div
@@ -176,7 +176,7 @@ export default function HeroCarousel({ lang }: HeroCarouselProps) {
         {/* Second Column - Two rows: Pokemon (top) and Starbucks (bottom) */}
         <div className="lg:col-span-2 space-y-3 lg:space-y-4">
           {/* Pokemon Halloween Collection */}
-          <div className="relative h-[325px] lg:h-[325px] overflow-hidden rounded-2xl">
+          <div className="relative h-[317px] lg:h-[317px] overflow-hidden rounded-2xl">
             <Image
               src="/hero_2.jpg"
               alt="Pokemon Halloween Collection"
@@ -194,7 +194,7 @@ export default function HeroCarousel({ lang }: HeroCarouselProps) {
                 <h2 className="text-xl lg:text-2xl font-bold mb-1">Pokemon Halloween</h2>
                 <h3 className="text-lg lg:text-xl font-semibold mb-3">Collection</h3>
                 <Link
-                  href={`/${lang}/products?category=pokemon`}
+                  href={`/${lang}/products`}
                   className="inline-block bg-white text-black px-4 py-2 rounded-full font-semibold hover:bg-gray-100 transition-colors text-sm"
                 >
                   View Collection
@@ -204,7 +204,7 @@ export default function HeroCarousel({ lang }: HeroCarouselProps) {
           </div>
 
           {/* Starbucks Tsukimi Collection */}
-          <div className="relative h-[325px] lg:h-[325px] overflow-hidden rounded-2xl">
+          <div className="relative h-[317px] lg:h-[317px] overflow-hidden rounded-2xl">
             <Image
               src="/hero_3.jpg"
               alt="Starbucks Tsukimi Collection"
@@ -222,7 +222,7 @@ export default function HeroCarousel({ lang }: HeroCarouselProps) {
                 <h2 className="text-xl lg:text-2xl font-bold mb-1">Starbucks Tsukimi</h2>
                 <h3 className="text-lg lg:text-xl font-semibold mb-3">Collection</h3>
                 <Link
-                  href={`/${lang}/products?category=starbucks`}
+                  href={`/${lang}/products`}
                   className="inline-block bg-white text-black px-4 py-2 rounded-full font-semibold hover:bg-gray-100 transition-colors text-sm"
                 >
                   View Collection

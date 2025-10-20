@@ -6,7 +6,8 @@ import {
     deleteScrapedProduct,
     clearAllScrapedProducts,
     getScrapingStats,
-    getRecentScrapingJobs
+    getRecentScrapingJobs,
+    calculateDisplayPrice
 } from '@/lib/db/scraped-products';
 import { translateProductsArray } from '@/lib/translation-service';
 
@@ -52,6 +53,9 @@ export async function GET(request: NextRequest) {
                 fixedPrice = Math.round((firstPrice / 150) * 100) / 100;
             }
 
+            // Apply 20% markup for scraped products
+            const displayPrice = calculateDisplayPrice(fixedPrice);
+
             // Map availability to frontend expected values
             let mappedAvailability: 'in' | 'out' = 'in';
             if (product.availability === 'preorder' || product.availability === 'in') {
@@ -63,7 +67,7 @@ export async function GET(request: NextRequest) {
             // Translate product data if needed
             const productToTranslate = {
                 ...product,
-                price: fixedPrice,
+                price: displayPrice,
                 type: product.category || 'General',
                 availability: mappedAvailability,
             };
@@ -107,6 +111,9 @@ export async function GET(request: NextRequest) {
                     fixedPrice = Math.round((firstPrice / 150) * 100) / 100;
                 }
 
+                // Apply 20% markup for scraped products
+                const displayPrice = calculateDisplayPrice(fixedPrice);
+
                 // Map availability to frontend expected values
                 let mappedAvailability: 'in' | 'out' = 'in';
                 if (p.availability === 'preorder' || p.availability === 'in') {
@@ -117,7 +124,7 @@ export async function GET(request: NextRequest) {
 
                 return {
                     ...p,
-                    price: fixedPrice,
+                    price: displayPrice,
                     // Map category to type for frontend compatibility
                     type: p.category || 'General',
                     // Map availability to expected values

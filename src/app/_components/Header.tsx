@@ -62,7 +62,7 @@ export default function Header({ lang }: { lang: "en" | "ja" }) {
     };
 
 	return (
-		<div className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b">
+		<div className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b w-full">
             <div className="w-full px-4 py-3 flex items-center gap-4">
                 {/* Logo */}
                 <Link href={`/${lang}`} className="flex items-center gap-2">

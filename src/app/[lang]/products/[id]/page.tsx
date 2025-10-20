@@ -144,14 +144,8 @@ export default function ProductDetail({ params }: { params: Promise<{ lang: stri
         };
     }, [id, loading, relatedDocId]);
 
-    // Calculate display price with 20% markup on scraped products
+    // Price is already calculated with markup from API
     const getDisplayPrice = (product: DBProduct) => {
-        // For scraped products, add 20% markup to the scraped price
-        if (product.sourceUrl && product.sourceUrl.includes('scraped')) {
-            const scrapedPrice = product.price;
-            const markupAmount = scrapedPrice * 0.2;
-            return scrapedPrice + markupAmount;
-        }
         return product.price;
     };
 

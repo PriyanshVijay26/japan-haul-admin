@@ -5,6 +5,61 @@
   --foreground: #171717;
 }
 
+/* Fix for mobile viewport height issues */
+html {
+  height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+  min-height: 100dvh; /* Use dynamic viewport height for mobile */
+  overflow-x: hidden;
+}
+
+/* Ensure proper box-sizing */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Mobile-specific fixes */
+@media screen and (max-width: 768px) {
+  /* Prevent horizontal scroll on mobile */
+  body {
+    position: relative;
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* Fix for iOS Safari viewport issues */
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Ensure full width on mobile */
+  .mobile-full-width {
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+  }
+}
+
+/* Fix for potential z-index stacking issues */
+.promo-bar {
+  z-index: 50;
+  position: relative;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

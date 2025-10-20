@@ -54,7 +54,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
         return { items: [] } as CartState;
     });
-	const subtotal = useMemo(() => state.items.reduce((s, i) => s + i.price * i.quantity, 0), [state.items]);
+	const subtotal = useMemo(() => Math.round(state.items.reduce((s, i) => s + i.price * i.quantity, 0)), [state.items]);
     if (typeof window !== "undefined") {
         try { window.localStorage.setItem("cart:v1", JSON.stringify(state)); } catch {}
     }

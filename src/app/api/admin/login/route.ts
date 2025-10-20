@@ -8,11 +8,13 @@ export const runtime = 'nodejs';
 // In production, use a proper database or authentication service
 const authenticatedSessions = new Set<string>();
 
-// Simple admin credentials (in production, use hashed passwords and proper auth)
-const ADMIN_CREDENTIALS = {
-    email: 'admin@japanhaul.com',
-    password: 'admin123', // In production, use bcrypt or similar
-};
+// Admin credentials from environment variables (REQUIRED for security)
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH; // Should be bcrypt hash in production
+
+if (!ADMIN_EMAIL || !ADMIN_PASSWORD_HASH) {
+    throw new Error('ADMIN_EMAIL and ADMIN_PASSWORD_HASH environment variables are required');
+}
 
 export async function POST(request: NextRequest) {
     try {
@@ -27,7 +29,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Validate credentials
-        if (email === ADMIN_CREDENTIALS.email && password === ADMIN_CREDENTIALS.password) {
+        if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD_HASH) {
             // Generate session ID using Web Crypto API (works in both Node.js and Edge)
             const sessionId = Array.from(
                 crypto.getRandomValues(new Uint8Array(32)),

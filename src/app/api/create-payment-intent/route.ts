@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     // Create a PaymentIntent with authorization only (no immediate capture)
     // Product price will be authorized, shipping fees captured later when shipped
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: currency === 'jpy' ? amount : Math.round(amount * 100), // JPY uses whole numbers, USD uses cents
+      amount: Math.round(amount), // Always convert to integer (JPY uses yen, USD uses cents)
       currency: currency,
       metadata: metadata,
       capture_method: 'manual', // Manual capture - authorize now, capture later
