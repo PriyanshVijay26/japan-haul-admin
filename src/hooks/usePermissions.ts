@@ -11,7 +11,7 @@ import {
   hasAllPermissions,
   canAccessFeature,
   type Permission
-} from "@/lib/auth/permissions";
+} from "@/lib/permissions";
 
 interface UsePermissionsReturn {
   user: AdminUser | null;
@@ -58,7 +58,7 @@ export function usePermissions(): UsePermissionsReturn {
     hasPermission: (permission: Permission) => hasPermission(user, permission),
     hasAnyPermission: (permissions: Permission[]) => hasAnyPermission(user, permissions),
     hasAllPermissions: (permissions: Permission[]) => hasAllPermissions(user, permissions),
-    canAccessFeature: (feature: 'ADMIN_MANAGEMENT' | 'PRODUCT_MANAGEMENT' | 'ORDER_MANAGEMENT' | 'CUSTOMER_MANAGEMENT' | 'ANALYTICS' | 'BASIC_ACCESS') => canAccessFeature(user, feature),
+    canAccessFeature: (feature: 'ADMIN_MANAGEMENT' | 'PRODUCT_MANAGEMENT' | 'ORDER_MANAGEMENT' | 'CUSTOMER_MANAGEMENT' | 'ANALYTICS' | 'SYSTEM_MANAGEMENT' | 'REPORTS' | 'OPERATIONS' | 'DATA_MANAGEMENT' | 'SECURITY' | 'BASIC_ACCESS') => canAccessFeature(user, feature),
     isSuperAdmin: user?.role === 'super_admin',
     isAdmin: user?.role === 'admin',
     isGeneral: user?.role === 'general',

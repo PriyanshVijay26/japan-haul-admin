@@ -208,11 +208,16 @@ export default function AnalyticsPage() {
 
     if (!isAuthenticated || !userPermissions.includes('analytics.view')) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-center">
-                    <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
-                    <p className="text-gray-600 mb-4">You don&apos;t have permission to access this page.</p>
-                    <Link href={`/${lang}/admin/login`} className="text-blue-600 hover:text-blue-800">
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-8">
+                    <h2 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h2>
+                    <p className="text-gray-600 mb-6">
+                        You do not have permission to access this page.
+                    </p>
+                    <Link
+                        href={`/${lang}/admin/login`}
+                        className="block w-full text-center bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
+                    >
                         Go to Login
                     </Link>
                 </div>

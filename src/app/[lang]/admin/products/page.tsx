@@ -4,8 +4,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import { useAdmin, usePermissions } from "@/contexts/AdminContext";
+import { PERMISSIONS } from "@/lib/permissions";
 
 interface Product {
     id: string;
@@ -20,8 +22,8 @@ interface Product {
 export default function ProductsAdminPage() {
     const { lang: rawLang } = useParams<{ lang: string }>();
     const lang = rawLang === "ja" ? "ja" : "en";
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const { user, isLoading, isAuthenticated, role, signOut: adminSignOut } = useAdmin();
+    const { hasPermission } = usePermissions();
     const [products, setProducts] = useState<Product[]>([]);
     const [productsLoading, setProductsLoading] = useState(false);
     const [loadingMore, setLoadingMore] = useState(false);
@@ -30,43 +32,13 @@ export default function ProductsAdminPage() {
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [showEditModal, setShowEditModal] = useState(false);
 
-    // Check authentication on mount
-    useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                try {
-                    const response = await fetch('/api/admin/check-access', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ uid: user.uid, email: user.email }),
-                    });
-
-                    if (response.ok) {
-                        const data = await response.json();
-                        setIsAuthenticated(data.hasAccess);
-                    } else {
-                        setIsAuthenticated(false);
-                    }
-                } catch (error) {
-                    console.error('Error checking admin access:', error);
-                    setIsAuthenticated(false);
-                }
-            } else {
-                setIsAuthenticated(false);
-            }
-            setIsLoading(false);
-        });
-
-        return () => unsubscribe();
-    }, []);
-
     // Load products
     useEffect(() => {
-        if (isAuthenticated) {
+        if (isAuthenticated && hasPermission(PERMISSIONS.PRODUCTS_VIEW)) {
             console.log('🔄 Initial load - resetting products and cursor');
             loadProducts(true); // Force reset for initial load
         }
-    }, [isAuthenticated]);
+    }, [isAuthenticated, hasPermission]);
 
     // Infinite scroll effect with throttling
     useEffect(() => {
@@ -228,7 +200,7 @@ export default function ProductsAdminPage() {
 
     const handleLogout = async () => {
         try {
-            await signOut(auth);
+            await adminSignOut();
             window.location.href = `/${lang}/admin/login`;
         } catch (error) {
             console.error('Error logging out:', error);
@@ -243,7 +215,7 @@ export default function ProductsAdminPage() {
         );
     }
 
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !hasPermission(PERMISSIONS.ADMIN_LOGIN)) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-8">
@@ -262,6 +234,26 @@ export default function ProductsAdminPage() {
         );
     }
 
+    // Check if user has permission to view products
+    if (!hasPermission(PERMISSIONS.PRODUCTS_VIEW)) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-8">
+                    <h2 className="text-2xl font-bold text-orange-600 mb-4">Access Restricted</h2>
+                    <p className="text-gray-600 mb-6">
+                        General users can only access Purchase History.
+                    </p>
+                    <Link
+                        href={`/${lang}/admin/purchases`}
+                        className="block w-full text-center bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
+                    >
+                        Go to Purchase History
+                    </Link>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-gray-50">
             <header className="bg-white shadow">
@@ -270,30 +262,38 @@ export default function ProductsAdminPage() {
                         <div className="flex items-center space-x-4">
                             <h1 className="text-2xl font-bold text-gray-900">Admin - Products</h1>
                             <div className="flex space-x-2">
-                                <Link
-                                    href={`/${lang}/admin/purchases`}
-                                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
-                                >
-                                    📦 Purchases
-                                </Link>
-                                <Link
-                                    href={`/${lang}/admin/profit`}
-                                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
-                                >
-                                    💰 Profit
-                                </Link>
-                                <Link
-                                    href={`/${lang}/admin/analytics`}
-                                    className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 text-sm"
-                                >
-                                    📊 Analytics
-                                </Link>
-                                <Link
-                                    href={`/${lang}/admin/users`}
-                                    className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm"
-                                >
-                                    👥 Users
-                                </Link>
+                                {hasPermission(PERMISSIONS.ORDERS_VIEW) && (
+                                    <Link
+                                        href={`/${lang}/admin/purchases`}
+                                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+                                    >
+                                        📦 Purchases
+                                    </Link>
+                                )}
+                                {hasPermission(PERMISSIONS.ANALYTICS_PROFIT_VIEW) && (
+                                    <Link
+                                        href={`/${lang}/admin/profit`}
+                                        className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
+                                    >
+                                        💰 Profit
+                                    </Link>
+                                )}
+                                {hasPermission(PERMISSIONS.ANALYTICS_VIEW) && (
+                                    <Link
+                                        href={`/${lang}/admin/analytics`}
+                                        className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 text-sm"
+                                    >
+                                        📊 Analytics
+                                    </Link>
+                                )}
+                                {hasPermission(PERMISSIONS.ADMIN_PERMISSIONS_EDIT) && (
+                                    <Link
+                                        href={`/${lang}/admin/users`}
+                                        className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm"
+                                    >
+                                        👥 Users
+                                    </Link>
+                                )}
                             </div>
                         </div>
                         <button

@@ -647,38 +647,83 @@ export function getRolePermissions(role: AdminUser['role']): string[] {
                 'orders.edit',
                 'orders.capture',
                 'customers.view',
+                'customers.edit',
+                'customers.delete',
                 'analytics.view',
                 'analytics.export',
                 'analytics.profit.view',
-                'system.settings'
+                'analytics.profit.edit',
+                'system.settings',
+                'system.maintenance',
+                'reports.sales.view',
+                'reports.inventory.view',
+                'reports.financial.view',
+                'shipping.manage',
+                'notifications.send',
+                'promotions.manage',
+                'inventory.manage',
+                'data.import',
+                'data.export',
+                'audit.logs.view',
+                'security.manage'
             ];
         case 'admin':
             return [
                 'admin.login',
-                'admin.list.view',
+                'admin.list.edit',
                 'products.view',
                 'products.edit',
                 'products.popularity.view',
                 'orders.view',
                 'orders.edit',
                 'orders.capture',
-                'customers.view',
                 'analytics.view',
-                'analytics.profit.view'
+                'reports.sales.view',
+                'reports.inventory.view',
+                'reports.financial.view',
+                'shipping.manage',
+                'notifications.send',
+                'promotions.manage',
+                'inventory.manage',
+                'data.export'
             ];
         case 'general':
             return [
                 'admin.login',
-                'products.view',
-                'products.popularity.view',
-                'orders.view',
-                'customers.view',
-                'analytics.view'
+                'orders.view'
             ];
         case 'test_mode':
             return [
                 'admin.login',
-                'products.view'
+                'admin.list.edit',
+                'admin.permissions.edit',
+                'products.view',
+                'products.edit',
+                'products.delete',
+                'products.popularity.view',
+                'orders.view',
+                'orders.edit',
+                'orders.capture',
+                'customers.view',
+                'customers.edit',
+                'customers.delete',
+                'analytics.view',
+                'analytics.export',
+                'analytics.profit.view',
+                'analytics.profit.edit',
+                'system.settings',
+                'system.maintenance',
+                'reports.sales.view',
+                'reports.inventory.view',
+                'reports.financial.view',
+                'shipping.manage',
+                'notifications.send',
+                'promotions.manage',
+                'inventory.manage',
+                'data.import',
+                'data.export',
+                'audit.logs.view',
+                'security.manage'
             ];
         default:
             return [];
@@ -704,7 +749,7 @@ export function getPermissionMatrix(): PermissionMatrixItem[] {
             description: 'Can log into the admin system',
             super_admin: true,
             admin: true,
-            general: true,
+            general: false,
             test_mode: true
         },
         {
@@ -714,7 +759,7 @@ export function getPermissionMatrix(): PermissionMatrixItem[] {
             super_admin: true,
             admin: true,
             general: false,
-            test_mode: false
+            test_mode: true
         },
         {
             function: 'admin.permissions.edit',
@@ -723,7 +768,7 @@ export function getPermissionMatrix(): PermissionMatrixItem[] {
             super_admin: true,
             admin: false,
             general: false,
-            test_mode: false
+            test_mode: true
         },
         {
             function: 'products.view',
@@ -731,7 +776,7 @@ export function getPermissionMatrix(): PermissionMatrixItem[] {
             description: 'Can view product details and listings',
             super_admin: true,
             admin: true,
-            general: true,
+            general: false,
             test_mode: true
         },
         {
@@ -741,7 +786,7 @@ export function getPermissionMatrix(): PermissionMatrixItem[] {
             super_admin: true,
             admin: true,
             general: false,
-            test_mode: false
+            test_mode: true
         },
         {
             function: 'products.delete',
@@ -750,7 +795,7 @@ export function getPermissionMatrix(): PermissionMatrixItem[] {
             super_admin: true,
             admin: false,
             general: false,
-            test_mode: false
+            test_mode: true
         },
         {
             function: 'products.popularity.view',
@@ -758,8 +803,8 @@ export function getPermissionMatrix(): PermissionMatrixItem[] {
             description: 'Can view and sort products by popularity metrics',
             super_admin: true,
             admin: true,
-            general: true,
-            test_mode: false
+            general: false,
+            test_mode: true
         },
         {
             function: 'orders.view',
@@ -768,7 +813,7 @@ export function getPermissionMatrix(): PermissionMatrixItem[] {
             super_admin: true,
             admin: true,
             general: true,
-            test_mode: false
+            test_mode: true
         },
         {
             function: 'orders.edit',
@@ -777,7 +822,7 @@ export function getPermissionMatrix(): PermissionMatrixItem[] {
             super_admin: true,
             admin: true,
             general: false,
-            test_mode: false
+            test_mode: true
         },
         {
             function: 'orders.capture',
@@ -786,16 +831,34 @@ export function getPermissionMatrix(): PermissionMatrixItem[] {
             super_admin: true,
             admin: true,
             general: false,
-            test_mode: false
+            test_mode: true
         },
         {
             function: 'customers.view',
             displayName: 'Customer List',
             description: 'Can view customer information and lists',
             super_admin: true,
-            admin: true,
-            general: true,
-            test_mode: false
+            admin: false,
+            general: false,
+            test_mode: true
+        },
+        {
+            function: 'customers.edit',
+            displayName: 'Edit Customer Information',
+            description: 'Can edit customer details',
+            super_admin: true,
+            admin: false,
+            general: false,
+            test_mode: true
+        },
+        {
+            function: 'customers.delete',
+            displayName: 'Delete Customer',
+            description: 'Can delete customer records',
+            super_admin: true,
+            admin: false,
+            general: false,
+            test_mode: true
         },
         {
             function: 'analytics.view',
@@ -803,8 +866,8 @@ export function getPermissionMatrix(): PermissionMatrixItem[] {
             description: 'Can view analytics dashboard',
             super_admin: true,
             admin: true,
-            general: true,
-            test_mode: false
+            general: false,
+            test_mode: true
         },
         {
             function: 'analytics.export',
@@ -813,16 +876,25 @@ export function getPermissionMatrix(): PermissionMatrixItem[] {
             super_admin: true,
             admin: false,
             general: false,
-            test_mode: false
+            test_mode: true
         },
         {
             function: 'analytics.profit.view',
             displayName: 'Profit Management',
             description: 'Can view profit analytics and management reports',
             super_admin: true,
-            admin: true,
+            admin: false,
             general: false,
-            test_mode: false
+            test_mode: true
+        },
+        {
+            function: 'analytics.profit.edit',
+            displayName: 'Edit Profit Settings',
+            description: 'Can edit profit margins and settings',
+            super_admin: true,
+            admin: false,
+            general: false,
+            test_mode: true
         },
         {
             function: 'system.settings',
@@ -831,7 +903,115 @@ export function getPermissionMatrix(): PermissionMatrixItem[] {
             super_admin: true,
             admin: false,
             general: false,
-            test_mode: false
+            test_mode: true
+        },
+        {
+            function: 'system.maintenance',
+            displayName: 'System Maintenance',
+            description: 'Can perform system maintenance tasks',
+            super_admin: true,
+            admin: false,
+            general: false,
+            test_mode: true
+        },
+        {
+            function: 'reports.sales.view',
+            displayName: 'Sales Reports',
+            description: 'Can view sales reports',
+            super_admin: true,
+            admin: true,
+            general: false,
+            test_mode: true
+        },
+        {
+            function: 'reports.inventory.view',
+            displayName: 'Inventory Reports',
+            description: 'Can view inventory reports',
+            super_admin: true,
+            admin: true,
+            general: false,
+            test_mode: true
+        },
+        {
+            function: 'reports.financial.view',
+            displayName: 'Financial Reports',
+            description: 'Can view financial reports',
+            super_admin: true,
+            admin: true,
+            general: false,
+            test_mode: true
+        },
+        {
+            function: 'shipping.manage',
+            displayName: 'Shipping Management',
+            description: 'Can manage shipping settings and carriers',
+            super_admin: true,
+            admin: true,
+            general: false,
+            test_mode: true
+        },
+        {
+            function: 'notifications.send',
+            displayName: 'Send Notifications',
+            description: 'Can send notifications to customers',
+            super_admin: true,
+            admin: true,
+            general: false,
+            test_mode: true
+        },
+        {
+            function: 'promotions.manage',
+            displayName: 'Manage Promotions',
+            description: 'Can create and manage promotional campaigns',
+            super_admin: true,
+            admin: true,
+            general: false,
+            test_mode: true
+        },
+        {
+            function: 'inventory.manage',
+            displayName: 'Inventory Management',
+            description: 'Can manage inventory levels and alerts',
+            super_admin: true,
+            admin: true,
+            general: false,
+            test_mode: true
+        },
+        {
+            function: 'data.import',
+            displayName: 'Data Import',
+            description: 'Can import data from external sources',
+            super_admin: true,
+            admin: false,
+            general: false,
+            test_mode: true
+        },
+        {
+            function: 'data.export',
+            displayName: 'Data Export',
+            description: 'Can export system data',
+            super_admin: true,
+            admin: true,
+            general: false,
+            test_mode: true
+        },
+        {
+            function: 'audit.logs.view',
+            displayName: 'View Audit Logs',
+            description: 'Can view system audit logs',
+            super_admin: true,
+            admin: false,
+            general: false,
+            test_mode: true
+        },
+        {
+            function: 'security.manage',
+            displayName: 'Security Management',
+            description: 'Can manage security settings and policies',
+            super_admin: true,
+            admin: false,
+            general: false,
+            test_mode: true
         }
     ];
 }

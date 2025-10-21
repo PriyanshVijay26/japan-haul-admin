@@ -3,61 +3,29 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import type { AdminUser } from "@/lib/db/scraped-products";
 import PermissionMatrix from "@/components/admin/PermissionMatrix";
+import { useAdmin, usePermissions } from "@/contexts/AdminContext";
+import { PERMISSIONS } from "@/lib/permissions";
 
 export default function AdminUsersPage() {
     const { lang: rawLang } = useParams<{ lang: string }>();
     const lang = rawLang === "ja" ? "ja" : "en";
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [userRole, setUserRole] = useState<string | null>(null);
-    const [userPermissions, setUserPermissions] = useState<string[]>([]);
-    const [userName, setUserName] = useState<string | null>(null);
+    const { user, isLoading, isAuthenticated, permissions, role, signOut: adminSignOut } = useAdmin();
+    const { hasPermission, hasAnyPermission } = usePermissions();
     const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
     const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
     const [showAddForm, setShowAddForm] = useState(false);
 
-    // Check authentication on mount
-    useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                // Check if user has admin privileges
-                try {
-                    const response = await fetch('/api/admin/check-access', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ uid: user.uid, email: user.email }),
-                    });
-
-                    if (response.ok) {
-                        const data = await response.json();
-                        setIsAuthenticated(data.hasAccess);
-                        setUserRole(data.role);
-                        setUserPermissions(data.permissions || []);
-                        setUserName(data.name);
-                    } else {
-                        setIsAuthenticated(false);
-                    }
-                } catch (error) {
-                    console.error('Error checking admin access:', error);
-                    setIsAuthenticated(false);
-                }
-            } else {
-                setIsAuthenticated(false);
-            }
-            setIsLoading(false);
-        });
-
-        return () => unsubscribe();
-    }, []);
-
     // Load admin users
     const loadAdminUsers = async () => {
+        // Check if user has permission to view admin users
+        if (!hasPermission(PERMISSIONS.ADMIN_LOGIN)) {
+            return;
+        }
+
         try {
             const response = await fetch('/api/admin/users');
             if (response.ok) {
@@ -71,20 +39,18 @@ export default function AdminUsersPage() {
 
     // Load data when component mounts
     useEffect(() => {
-        if (isAuthenticated) {
+        if (isAuthenticated && hasPermission(PERMISSIONS.ADMIN_LOGIN)) {
             loadAdminUsers();
         }
-    }, [isAuthenticated]);
-
-    const handleSignOut = async () => {
-        try {
-            await signOut(auth);
-        } catch (error) {
-            console.error('Error signing out:', error);
-        }
-    };
+    }, [isAuthenticated, hasPermission]);
 
     const handleRoleChange = async (userId: string, newRole: AdminUser['role']) => {
+        // Check if user has permission to edit admin users
+        if (!hasPermission(PERMISSIONS.ADMIN_PERMISSIONS_EDIT) || !hasPermission(PERMISSIONS.ADMIN_LIST_EDIT)) {
+            alert('You do not have permission to edit admin user roles');
+            return;
+        }
+
         try {
             const response = await fetch(`/api/admin/users/${userId}/role`, {
                 method: 'PUT',
@@ -106,6 +72,12 @@ export default function AdminUsersPage() {
     };
 
     const handleDeleteUser = async (uid: string) => {
+        // Check if user has permission to edit admin users
+        if (!hasPermission(PERMISSIONS.ADMIN_PERMISSIONS_EDIT) || !hasPermission(PERMISSIONS.ADMIN_LIST_EDIT)) {
+            alert('You do not have permission to delete admin users');
+            return;
+        }
+
         if (!confirm('Are you sure you want to delete this admin user?')) {
             return;
         }
@@ -153,14 +125,39 @@ export default function AdminUsersPage() {
         );
     }
 
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !hasPermission(PERMISSIONS.ADMIN_LOGIN)) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-center">
-                    <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
-                    <p className="text-gray-600 mb-4">You don&apos;t have permission to access this page.</p>
-                    <Link href={`/${lang}/admin/login`} className="text-blue-600 hover:text-blue-800">
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-8">
+                    <h2 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h2>
+                    <p className="text-gray-600 mb-6">
+                        You do not have permission to access this page.
+                    </p>
+                    <Link
+                        href={`/${lang}/admin/login`}
+                        className="block w-full text-center bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
+                    >
                         Go to Login
+                    </Link>
+                </div>
+            </div>
+        );
+    }
+
+    // Redirect general users to purchases page since they shouldn't access user management
+    if (role === 'general' && !hasPermission(PERMISSIONS.ADMIN_PERMISSIONS_EDIT)) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-8">
+                    <h2 className="text-2xl font-bold text-orange-600 mb-4">Access Restricted</h2>
+                    <p className="text-gray-600 mb-6">
+                        General users can only access Purchase History.
+                    </p>
+                    <Link
+                        href={`/${lang}/admin/purchases`}
+                        className="block w-full text-center bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
+                    >
+                        Go to Purchase History
                     </Link>
                 </div>
             </div>
@@ -176,37 +173,45 @@ export default function AdminUsersPage() {
                         <div className="flex items-center space-x-4">
                             <div>
                                 <h1 className="text-3xl font-bold text-gray-900">Admin Users</h1>
-                                {userName && (
+                                {user?.name && (
                                     <p className="text-sm text-gray-600 mt-1">
-                                        Welcome back, {userName} ({userRole?.replace('_', ' ')})
+                                        Welcome back, {user.name} ({role?.replace('_', ' ')})
                                     </p>
                                 )}
                             </div>
                             <div className="flex space-x-2">
-                                <Link
-                                    href={`/${lang}/admin/products`}
-                                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
-                                >
-                                    📦 Products
-                                </Link>
-                                <Link
-                                    href={`/${lang}/admin/purchases`}
-                                    className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 text-sm"
-                                >
-                                    🛒 Purchases
-                                </Link>
-                                <Link
-                                    href={`/${lang}/admin/analytics`}
-                                    className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 text-sm"
-                                >
-                                    📊 Analytics
-                                </Link>
-                                <Link
-                                    href={`/${lang}/admin/profit`}
-                                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
-                                >
-                                    💰 Profit
-                                </Link>
+                                {hasPermission(PERMISSIONS.PRODUCTS_VIEW) && (
+                                    <Link
+                                        href={`/${lang}/admin/products`}
+                                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+                                    >
+                                        📦 Products
+                                    </Link>
+                                )}
+                                {hasPermission(PERMISSIONS.ORDERS_VIEW) && (
+                                    <Link
+                                        href={`/${lang}/admin/purchases`}
+                                        className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 text-sm"
+                                    >
+                                        🛒 Purchases
+                                    </Link>
+                                )}
+                                {hasPermission(PERMISSIONS.ANALYTICS_VIEW) && (
+                                    <Link
+                                        href={`/${lang}/admin/analytics`}
+                                        className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 text-sm"
+                                    >
+                                        📊 Analytics
+                                    </Link>
+                                )}
+                                {hasPermission(PERMISSIONS.ANALYTICS_PROFIT_VIEW) && (
+                                    <Link
+                                        href={`/${lang}/admin/profit`}
+                                        className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
+                                    >
+                                        💰 Profit
+                                    </Link>
+                                )}
                             </div>
                         </div>
                         <div className="flex items-center space-x-4">
@@ -217,7 +222,7 @@ export default function AdminUsersPage() {
                                 Admin Dashboard
                             </Link>
                             <button
-                                onClick={handleSignOut}
+                                onClick={adminSignOut}
                                 className="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700"
                             >
                                 Sign Out
@@ -234,12 +239,14 @@ export default function AdminUsersPage() {
                             <h3 className="text-lg leading-6 font-medium text-gray-900">
                                 Admin User Management
                             </h3>
-                            <button
-                                onClick={() => setShowAddForm(true)}
-                                className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700"
-                            >
-                                Add Admin User
-                            </button>
+                            {hasPermission(PERMISSIONS.ADMIN_LIST_EDIT) && (
+                                <button
+                                    onClick={() => setShowAddForm(true)}
+                                    className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700"
+                                >
+                                    Add Admin User
+                                </button>
+                            )}
                         </div>
 
                         <div className="space-y-4">
@@ -276,22 +283,26 @@ export default function AdminUsersPage() {
                                     </div>
 
                                     <div className="flex justify-end gap-2">
-                                        <select
-                                            value={user.role}
-                                            onChange={(e) => handleRoleChange(user.id, e.target.value as AdminUser['role'])}
-                                            className="border rounded px-3 py-1 text-sm"
-                                        >
-                                            <option value="test_mode">Test Mode</option>
-                                            <option value="general">General</option>
-                                            <option value="admin">Admin</option>
-                                            <option value="super_admin">Super Admin</option>
-                                        </select>
-                                        <button
-                                            onClick={() => handleDeleteUser(user.uid)}
-                                            className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
-                                        >
-                                            Delete
-                                        </button>
+                                        {hasPermission(PERMISSIONS.ADMIN_PERMISSIONS_EDIT) && (
+                                            <select
+                                                value={user.role}
+                                                onChange={(e) => handleRoleChange(user.id, e.target.value as AdminUser['role'])}
+                                                className="border rounded px-3 py-1 text-sm"
+                                            >
+                                                <option value="test_mode">Test Mode</option>
+                                                <option value="general">General</option>
+                                                <option value="admin">Admin</option>
+                                                <option value="super_admin">Super Admin</option>
+                                            </select>
+                                        )}
+                                        {hasPermission(PERMISSIONS.ADMIN_LIST_EDIT) && (
+                                            <button
+                                                onClick={() => handleDeleteUser(user.uid)}
+                                                className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                                            >
+                                                Delete
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             ))}

@@ -2,6 +2,7 @@
 import type { ReactNode } from "react";
 import { usePathname, useParams } from "next/navigation";
 import { CartProvider } from "@/app/(cart)/CartContext";
+import { AdminProvider } from "@/contexts/AdminContext";
 import PromoBar from "@/app/_components/PromoBar";
 import Header from "@/app/_components/Header";
 import CategoryBar from "@/app/_components/CategoryBar";
@@ -22,22 +23,24 @@ export default function LangLayout({ children }: { children: ReactNode }) {
 
     return (
         <CartProvider>
-            <NextIntlClientProvider locale={lang} messages={messages} timeZone="UTC">
-                {hideChrome ? (
-                    <div className="min-h-screen bg-white text-gray-900">
-                        <main>{children}</main>
-                    </div>
-                ) : (
-                    <div className="min-h-screen flex flex-col bg-white text-gray-900">
-                        <PromoBar />
-                        <Header lang={lang} />
-                        <CategoryBar lang={lang} />
-                        <Breadcrumbs />
-                        <main className="flex-1">{children}</main>
-                        <Footer />
-                    </div>
-                )}
-            </NextIntlClientProvider>
+            <AdminProvider>
+                <NextIntlClientProvider locale={lang} messages={messages} timeZone="UTC">
+                    {hideChrome ? (
+                        <div className="min-h-screen bg-white text-gray-900">
+                            <main>{children}</main>
+                        </div>
+                    ) : (
+                        <div className="min-h-screen flex flex-col bg-white text-gray-900">
+                            <PromoBar />
+                            <Header lang={lang} />
+                            <CategoryBar lang={lang} />
+                            <Breadcrumbs />
+                            <main className="flex-1">{children}</main>
+                            <Footer />
+                        </div>
+                    )}
+                </NextIntlClientProvider>
+            </AdminProvider>
         </CartProvider>
     );
 }

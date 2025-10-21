@@ -10,7 +10,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 
 // Checkout Form Component that uses Stripe Elements
-function CheckoutForm({ subtotal, onPaymentSuccess, isDemoMode }: { subtotal: number; onPaymentSuccess: () => void; isDemoMode: boolean }) {
+function CheckoutForm({ subtotal, onPaymentSuccess, isDemoMode, lang }: { subtotal: number; onPaymentSuccess: () => void; isDemoMode: boolean; lang: string }) {
     const stripe = useStripe();
     const elements = useElements();
     const [isProcessing, setIsProcessing] = useState(false);
@@ -42,7 +42,7 @@ function CheckoutForm({ subtotal, onPaymentSuccess, isDemoMode }: { subtotal: nu
             const { error: paymentError } = await stripe.confirmPayment({
                 elements,
                 confirmParams: {
-                    return_url: `${window.location.origin}/confirmation`,
+                    return_url: `${window.location.origin}/${lang}/confirmation`,
                 },
             });
 
@@ -415,7 +415,7 @@ export default function CheckoutPage() {
                         {/* Show Stripe Elements when client secret is available */}
                         {clientSecret && !isLoadingPayment && (
                             <Elements options={options} stripe={stripePromise}>
-                                <CheckoutForm subtotal={subtotal} onPaymentSuccess={handlePaymentSuccess} isDemoMode={isDemoMode} />
+                                <CheckoutForm subtotal={subtotal} onPaymentSuccess={handlePaymentSuccess} isDemoMode={isDemoMode} lang={lang} />
                             </Elements>
                         )}
 

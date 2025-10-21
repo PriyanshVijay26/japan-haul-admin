@@ -7,6 +7,7 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useAnalytics } from "@/lib/hooks/useAnalytics";
 import { calculateProfitData, getProfitSummary, ProfitData } from "@/lib/db/profit";
+import { PERMISSIONS } from "@/lib/permissions";
 
 // Chart components (simplified for demo)
 interface ChartData {
@@ -155,7 +156,7 @@ export default function ProfitPage() {
 
     // Load profit data
     const loadProfitData = async () => {
-        if (!userPermissions.includes('analytics.view')) return;
+        if (!userPermissions.includes(PERMISSIONS.ANALYTICS_PROFIT_VIEW)) return;
 
         setLoading(true);
         try {
@@ -180,7 +181,7 @@ export default function ProfitPage() {
 
     // Load data when authenticated and permissions allow
     useEffect(() => {
-        if (isAuthenticated && userPermissions.includes('analytics.view')) {
+        if (isAuthenticated && userPermissions.includes(PERMISSIONS.ANALYTICS_PROFIT_VIEW)) {
             loadProfitData();
         }
     }, [isAuthenticated, userPermissions, dateRange, groupBy]);
@@ -201,13 +202,18 @@ export default function ProfitPage() {
         );
     }
 
-    if (!isAuthenticated || !userPermissions.includes('analytics.view')) {
+    if (!isAuthenticated || !userPermissions.includes(PERMISSIONS.ANALYTICS_PROFIT_VIEW)) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-center">
-                    <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
-                    <p className="text-gray-600 mb-4">You don&apos;t have permission to access this page.</p>
-                    <Link href={`/${lang}/admin/login`} className="text-blue-600 hover:text-blue-800">
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-8">
+                    <h2 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h2>
+                    <p className="text-gray-600 mb-6">
+                        You do not have permission to access this page.
+                    </p>
+                    <Link
+                        href={`/${lang}/admin/login`}
+                        className="block w-full text-center bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
+                    >
                         Go to Login
                     </Link>
                 </div>

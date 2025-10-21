@@ -45,16 +45,8 @@ export async function GET(request: NextRequest) {
                 );
             }
             
-            // Fix concatenated price and add type mapping
-            let fixedPrice = product.price || 0;
-            if (fixedPrice > 100000) {
-                const priceStr = String(fixedPrice);
-                const firstPrice = parseInt(priceStr.substring(0, Math.min(5, priceStr.length)));
-                fixedPrice = Math.round((firstPrice / 150) * 100) / 100;
-            }
-
             // Apply 20% markup for scraped products
-            const displayPrice = calculateDisplayPrice(fixedPrice);
+            const displayPrice = calculateDisplayPrice(product.price || 0);
 
             // Map availability to frontend expected values
             let mappedAvailability: 'in' | 'out' = 'in';
