@@ -36,7 +36,7 @@ export default function LocalizedHome({ params }: { params: Promise<{ lang: stri
         const fetchProducts = async () => {
             try {
                 console.log('🔄 Fetching real products for home page...');
-                const realProducts = await getAllProducts(8);
+                const realProducts = await getAllProducts(16);
                 console.log('✅ Received real products:', realProducts.length);
                 if (realProducts.length > 0) {
                     setProducts(realProducts);
@@ -54,9 +54,9 @@ export default function LocalizedHome({ params }: { params: Promise<{ lang: stri
     return (
         <section>
             {/* Hero Carousel */}
-            <div className="w-full px-6 lg:px-10 py-8 mb-6">
+            {/* <div className="w-full px-6 lg:px-10 py-8 mb-6">
                 <HeroCarousel lang={lang} />
-            </div>
+            </div> */}
 
             {/* Product grid with SSR data + client-side fallback */}
             <div className="w-full px-6 lg:px-10 py-8">
