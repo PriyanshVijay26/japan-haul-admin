@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -26,20 +28,44 @@ interface FeaturedProduct {
 
 export default function FeaturedProductPage() {
     const router = useRouter();
+    const { lang: rawLang } = useParams<{ lang: string }>();
+    const lang = rawLang === "ja" ? "ja" : "en";
+    
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+    const [isAuthLoading, setIsAuthLoading] = useState(true);
     const [products, setProducts] = useState<FeaturedProduct[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [editingProduct, setEditingProduct] = useState<FeaturedProduct | null>(null);
     
-    // Get lang from URL
-    const [lang, setLang] = useState('en');
-    
+    // Check authentication on mount
     useEffect(() => {
-        const path = window.location.pathname;
-        const langMatch = path.match(/\/(en|ja)\//);
-        if (langMatch) {
-            setLang(langMatch[1]);
-        }
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    const response = await fetch('/api/admin/check-access', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ uid: user.uid, email: user.email }),
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        setIsAuthenticated(data.hasAccess);
+                    } else {
+                        setIsAuthenticated(false);
+                    }
+                } catch (error) {
+                    console.error('Error checking admin access:', error);
+                    setIsAuthenticated(false);
+                }
+            } else {
+                setIsAuthenticated(false);
+            }
+            setIsAuthLoading(false);
+        });
+
+        return () => unsubscribe();
     }, []);
 
     // Form state
@@ -61,8 +87,10 @@ export default function FeaturedProductPage() {
     });
 
     useEffect(() => {
-        fetchProducts();
-    }, []);
+        if (isAuthenticated) {
+            fetchProducts();
+        }
+    }, [isAuthenticated]);
 
     const fetchProducts = async () => {
         try {
@@ -200,6 +228,42 @@ export default function FeaturedProductPage() {
         }
     };
 
+    const handleLogout = async () => {
+        try {
+            await signOut(auth);
+            window.location.href = `/${lang}/admin/login`;
+        } catch (error) {
+            console.error('Error logging out:', error);
+        }
+    };
+
+    if (isAuthLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+            </div>
+        );
+    }
+
+    if (!isAuthenticated) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-8">
+                    <h2 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h2>
+                    <p className="text-gray-600 mb-6">
+                        You do not have permission to access this page.
+                    </p>
+                    <Link
+                        href={`/${lang}/admin/login`}
+                        className="block w-full text-center bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
+                    >
+                        Go to Login
+                    </Link>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Header with Navigation */}
@@ -233,6 +297,12 @@ export default function FeaturedProductPage() {
                             <Link href={`/${lang}`} className="text-gray-600 hover:text-gray-900 text-sm">
                                 View Site
                             </Link>
+                            <button
+                                onClick={handleLogout}
+                                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+                            >
+                                Logout
+                            </button>
                         </div>
                     </div>
                 </div>
