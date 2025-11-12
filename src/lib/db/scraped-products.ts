@@ -952,6 +952,158 @@ export async function getScrapingStats(): Promise<{
 }
 
 // ============================================================================
+// FEATURED PRODUCT MANAGEMENT FUNCTIONS
+// ============================================================================
+
+export interface FeaturedProduct {
+    id: string;
+    title: string;
+    description: string;
+    price: number; // Price in JPY
+    originalPrice?: number; // Compare at price
+    discount?: number; // Discount percentage
+    imageUrl: string;
+    color?: string; // e.g., "Shaded", "Cream"
+    colorOptions?: string[]; // Available color options
+    quantityOptions?: number[]; // Available quantity options (e.g., [1, 2, 3, 4])
+    badge?: string; // e.g., "HOLIDAY HUGE SALE!", "SAVE 66%"
+    buttonText?: string; // e.g., "ADD TO CART", "VIEW FULL DETAILS"
+    isActive: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+    // Additional metadata
+    category?: string;
+    sourceUrl?: string;
+    specifications?: string[]; // Array of spec items
+}
+
+const FEATURED_PRODUCT_COLLECTION = 'featuredProduct';
+
+/**
+ * Get the active featured product
+ */
+export async function getFeaturedProduct(): Promise<FeaturedProduct | null> {
+    try {
+        const featuredRef = collection(db, FEATURED_PRODUCT_COLLECTION);
+        const q = query(featuredRef, where('isActive', '==', true), limit(1));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+            const doc = querySnapshot.docs[0];
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                createdAt: data.createdAt.toDate(),
+                updatedAt: data.updatedAt.toDate(),
+            } as FeaturedProduct;
+        }
+
+        return null;
+    } catch (error) {
+        console.error('❌ Error getting featured product:', error);
+        throw error;
+    }
+}
+
+/**
+ * Create or update featured product
+ */
+export async function saveFeaturedProduct(
+    product: Omit<FeaturedProduct, 'id' | 'createdAt' | 'updatedAt'>
+): Promise<string> {
+    try {
+        // First, deactivate any existing featured products
+        const existingProducts = await getDocs(
+            query(collection(db, FEATURED_PRODUCT_COLLECTION), where('isActive', '==', true))
+        );
+
+        const batch = writeBatch(db);
+
+        // Deactivate all existing featured products
+        existingProducts.docs.forEach((doc) => {
+            batch.update(doc.ref, { isActive: false, updatedAt: new Date() });
+        });
+
+        // Add the new featured product
+        const newProductRef = doc(collection(db, FEATURED_PRODUCT_COLLECTION));
+        const productData = {
+            ...product,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            isActive: true,
+        };
+
+        batch.set(newProductRef, productData);
+        await batch.commit();
+
+        console.log(`✅ Featured product created: ${newProductRef.id}`);
+        return newProductRef.id;
+    } catch (error) {
+        console.error('❌ Error saving featured product:', error);
+        throw error;
+    }
+}
+
+/**
+ * Update featured product
+ */
+export async function updateFeaturedProduct(
+    productId: string,
+    updates: Partial<FeaturedProduct>
+): Promise<void> {
+    try {
+        const productRef = doc(db, FEATURED_PRODUCT_COLLECTION, productId);
+        await updateDoc(productRef, {
+            ...updates,
+            updatedAt: new Date(),
+        } as Record<string, unknown>);
+
+        console.log(`✅ Featured product updated: ${productId}`);
+    } catch (error) {
+        console.error('❌ Error updating featured product:', error);
+        throw error;
+    }
+}
+
+/**
+ * Delete featured product
+ */
+export async function deleteFeaturedProduct(productId: string): Promise<void> {
+    try {
+        await deleteDoc(doc(db, FEATURED_PRODUCT_COLLECTION, productId));
+        console.log(`✅ Featured product deleted: ${productId}`);
+    } catch (error) {
+        console.error('❌ Error deleting featured product:', error);
+        throw error;
+    }
+}
+
+/**
+ * Get all featured products (for admin)
+ */
+export async function getAllFeaturedProducts(): Promise<FeaturedProduct[]> {
+    try {
+        const featuredRef = collection(db, FEATURED_PRODUCT_COLLECTION);
+        const q = query(featuredRef, orderBy('createdAt', 'desc'));
+        const querySnapshot = await getDocs(q);
+
+        return querySnapshot.docs.map((doc) => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                createdAt: data.createdAt.toDate(),
+                updatedAt: data.updatedAt.toDate(),
+            } as FeaturedProduct;
+        });
+    } catch (error) {
+        console.error('❌ Error getting all featured products:', error);
+        throw error;
+    }
+}
+
+// ============================================================================
 // ORDER MANAGEMENT FUNCTIONS
 // ============================================================================
 
@@ -1023,6 +1175,33 @@ export async function createOrder(orderData: Omit<OrderData, 'id' | 'createdAt' 
         const docRef = await addDoc(ordersRef, newOrderData);
 
         console.log(`✅ Order created: ${docRef.id}`);
+
+        // Send Slack notification (non-blocking)
+        try {
+            const { sendOrderNotificationToSlack } = await import('@/lib/slack');
+            
+            await sendOrderNotificationToSlack({
+                orderId: docRef.id,
+                customerName: `${orderData.firstName} ${orderData.lastName}`,
+                customerEmail: orderData.email,
+                items: orderData.items.map(item => ({
+                    title: item.title,
+                    quantity: item.quantity,
+                    price: item.price,
+                })),
+                subtotal: orderData.subtotal,
+                total: orderData.total,
+                shippingFee: orderData.shippingFee,
+                address: orderData.address,
+                city: orderData.city,
+                state: orderData.state,
+                zipCode: orderData.zipCode,
+            });
+        } catch (slackError) {
+            console.error('⚠️ Failed to send Slack notification (non-critical):', slackError);
+            // Don't throw - order was created successfully
+        }
+
         return docRef.id;
     } catch (error) {
         console.error('❌ Error creating order:', error);

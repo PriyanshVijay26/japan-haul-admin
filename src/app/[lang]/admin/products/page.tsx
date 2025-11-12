@@ -271,6 +271,12 @@ export default function ProductsAdminPage() {
                             <h1 className="text-2xl font-bold text-gray-900">Admin - Products</h1>
                             <div className="flex space-x-2">
                                 <Link
+                                    href={`/${lang}/admin/featured-product`}
+                                    className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 text-sm"
+                                >
+                                    ⭐ Featured
+                                </Link>
+                                <Link
                                     href={`/${lang}/admin/purchases`}
                                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
                                 >
