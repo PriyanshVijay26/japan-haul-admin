@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useEffect, useState, use } from "react";
 import { useCart } from "@/app/(cart)/CartContext";
 import HeroCarousel from "@/app/_components/HeroCarousel";
-import { getAllProducts, type Product, products as hardcodedProducts } from "@/app/_data/products";
+import { getAllProducts, type Product } from "@/app/_data/products";
 
 interface FeaturedProduct {
     id: string;
@@ -73,17 +73,12 @@ export default function LocalizedHome({ params }: { params: Promise<{ lang: stri
                 // Fetch products
                 const realProducts = await getAllProducts(16);
                 console.log('✅ Received real products:', realProducts.length);
-                if (realProducts.length > 0) {
-                    setProducts(realProducts);
-                    console.log('✅ Updated home page with real products');
-                } else {
-                    // Fallback to hardcoded if no real products
-                    setProducts(hardcodedProducts.slice(0, 8));
-                }
+                setProducts(realProducts);
+                console.log('✅ Updated home page with real products');
             } catch (error) {
                 console.error('❌ Failed to fetch data for home page:', error);
-                // Keep using dummy products as fallback
-                setProducts(hardcodedProducts.slice(0, 8));
+                // Keep empty array - show loading skeleton or empty state
+                setProducts([]);
             } finally {
                 setIsLoading(false);
             }

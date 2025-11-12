@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { products as hardcodedProducts, brands, types, Product, getProductsPage } from "@/app/_data/products";
+import { brands, types, Product, getProductsPage } from "@/app/_data/products";
 import { useMemo, useState, useEffect, useRef } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -16,8 +16,6 @@ interface PopularProduct {
     imageUrl?: string;
     sourceUrl?: string;
 }
-
-const mockProducts: Product[] = hardcodedProducts;
 
 export default function ProductsPage() {
     const t = useTranslations();
@@ -64,10 +62,7 @@ export default function ProductsPage() {
         const fetchProducts = async () => {
             try {
                 console.log('🔄 Fetching products from Firebase...');
-                // Immediately show mock items to avoid blank page while fetching
-                if (allProducts.length === 0) {
-                    setAllProducts(mockProducts);
-                }
+                
                 // Fetch first page from API (fast, limited)
                 const { products, nextCursor } = await getProductsPage(48);
                 console.log('🎯 Products received in component:', products.length);
@@ -97,8 +92,8 @@ export default function ProductsPage() {
                 setNextCursor(nextCursor);
             } catch (error) {
                 console.error('❌ Error fetching products:', error);
-                // Keep using hardcoded products as fallback
-                setAllProducts(mockProducts);
+                // Don't use dummy products - keep empty array to show error or empty state
+                setAllProducts([]);
             } finally {
                 setIsBootstrapping(false);
             }
@@ -460,17 +455,18 @@ export default function ProductsPage() {
                         </label>
                     </div>
                     
-                    {/* Initial loading indicator (kept small; mock products are shown meanwhile) */}
-                    {isBootstrapping && allProducts.length === 0 && (
-                        <div className="flex items-center justify-center py-12">
-                            <div className="text-center">
-                                <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent"></div>
-                                <p className="mt-2 text-sm text-gray-600">Loading products from Firebase...</p>
-                            </div>
+                    {/* Loading skeleton - show while bootstrapping with no products */}
+                    {isBootstrapping && allProducts.length === 0 ? (
+                        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5">
+                            {[...Array(16)].map((_, i) => (
+                                <div key={i} className="animate-pulse">
+                                    <div className="aspect-[4/3] bg-gray-200 rounded-xl mb-2"></div>
+                                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                                    <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+                                </div>
+                            ))}
                         </div>
-                    )}
-                    
-                    {/* Product grid stays visible; on load-more we show a small inline loader below */}
+                    ) : (
                     <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5">
                         {filtered.map((p, idx) => (
                             // Use a robust composite key to avoid duplicate key warnings if backend returns duplicate or missing IDs
@@ -555,7 +551,10 @@ export default function ProductsPage() {
 						</Link>
 				))}
                     </div>
-                        {nextCursor && (
+                    )}
+
+                    {/* Load more button */}
+                    {!isBootstrapping && nextCursor && (
                         <div className="mt-6 flex justify-center">
                             <button
                                 className="rounded-full bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
