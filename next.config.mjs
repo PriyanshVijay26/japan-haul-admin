@@ -8,7 +8,7 @@ const nextConfig = {
   // output: 'export',        // Disabled - using Firebase App Hosting which supports SSR
   trailingSlash: true,     // Add trailing slashes
   images: {
-    // unoptimized: true,     // Not needed with App Hosting
+    unoptimized: true,     // Disable Next.js image optimization to allow all external images
     remotePatterns: [
       { protocol: 'https', hostname: '**' }, // Allow all HTTPS domains
       { protocol: 'http', hostname: '**' },  // Allow all HTTP domains
