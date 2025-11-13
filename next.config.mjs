@@ -10,12 +10,8 @@ const nextConfig = {
   images: {
     // unoptimized: true,     // Not needed with App Hosting
     remotePatterns: [
-      { protocol: 'https', hostname: 'anime-store.jp' },
-      { protocol: 'https', hostname: 'cdn.shopify.com' },
-      { protocol: 'https', hostname: 'cdn.amnibus.com' },
-      { protocol: 'https', hostname: 'images.unsplash.com' },
-      { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
-      { protocol: 'http', hostname: 'localhost' },
+      { protocol: 'https', hostname: '**' }, // Allow all HTTPS domains
+      { protocol: 'http', hostname: '**' },  // Allow all HTTP domains
     ],
   },
   webpack: (config, { isServer }) => {
