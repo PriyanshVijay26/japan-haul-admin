@@ -7,6 +7,7 @@ const nextConfig = {
   reactStrictMode: true,
   // output: 'export',        // Disabled - using Firebase App Hosting which supports SSR
   trailingSlash: true,     // Add trailing slashes
+  // Image configuration - all external images allowed without optimization
   images: {
     unoptimized: true,     // Disable Next.js image optimization to allow all external images
     loader: 'custom',      // Use custom loader to bypass Vercel optimization
