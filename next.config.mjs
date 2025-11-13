@@ -9,6 +9,8 @@ const nextConfig = {
   trailingSlash: true,     // Add trailing slashes
   images: {
     unoptimized: true,     // Disable Next.js image optimization to allow all external images
+    loader: 'custom',      // Use custom loader to bypass Vercel optimization
+    loaderFile: './imageLoader.js', // Path to custom loader
     remotePatterns: [
       { protocol: 'https', hostname: '**' }, // Allow all HTTPS domains
       { protocol: 'http', hostname: '**' },  // Allow all HTTP domains
