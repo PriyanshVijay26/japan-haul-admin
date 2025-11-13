@@ -531,6 +531,7 @@ export default function FeaturedProductPage() {
                                             alt={product.title}
                                             fill
                                             className="object-cover rounded"
+                                            unoptimized
                                         />
                                     </div>
                                     <div className="flex-1">

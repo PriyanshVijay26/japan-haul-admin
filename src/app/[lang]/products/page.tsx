@@ -380,6 +380,7 @@ export default function ProductsPage() {
                                                 className="object-cover"
                                                 fill
                                                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                                unoptimized
                                             />
                                             <div className="absolute top-2 right-2 bg-orange-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
                                                 #{idx + 1}
@@ -518,6 +519,7 @@ export default function ProductsPage() {
                                             const target = e.target as HTMLImageElement;
                                             target.src = "/placeholder.jpg";
                                         }}
+                                        unoptimized
                                     />
                                     {/* Hover image (crossfade) */}
                                     <Image
@@ -530,6 +532,7 @@ export default function ProductsPage() {
                                             const target = e.target as HTMLImageElement;
                                             target.src = "/placeholder_alt.jpg";
                                         }}
+                                        unoptimized
                                     />
                                 </div>
                                 <div className="mt-2 text-sm leading-tight">
@@ -608,6 +611,7 @@ export default function ProductsPage() {
                                         const target = e.target as HTMLImageElement;
                                         target.src = "/placeholder.jpg";
                                     }}
+                                    unoptimized
                                 />
                             </div>
                             <div>

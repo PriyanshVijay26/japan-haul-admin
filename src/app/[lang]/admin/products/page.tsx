@@ -360,6 +360,7 @@ export default function ProductsAdminPage() {
                                                                 alt={product.title || "Product image"}
                                                                 width={40}
                                                                 height={40}
+                                                                unoptimized
                                                             />
                                                         </div>
                                                         <div className="ml-4">

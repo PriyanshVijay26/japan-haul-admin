@@ -165,6 +165,7 @@ export default function LocalizedHome({ params }: { params: Promise<{ lang: stri
                                         fill
                                         className="object-contain p-8"
                                         priority
+                                        unoptimized
                                     />
                                 </div>
                             </div>
@@ -288,6 +289,7 @@ export default function LocalizedHome({ params }: { params: Promise<{ lang: stri
                                         width={600}
                                         height={600}
                                         className="h-full w-full object-cover"
+                                        unoptimized
                                     />
                                 </div>
                                 <div className="mt-2 text-sm leading-tight">

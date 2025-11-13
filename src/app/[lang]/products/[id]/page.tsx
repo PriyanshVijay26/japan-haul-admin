@@ -204,6 +204,7 @@ export default function ProductDetail({ params }: { params: Promise<{ lang: stri
                                 width={1200}
                                 height={1200}
                                 className="h-full w-full object-cover"
+                                unoptimized
                             />
                         </div>
                         {product && (
@@ -218,6 +219,7 @@ export default function ProductDetail({ params }: { params: Promise<{ lang: stri
                                             width={600}
                                             height={450}
                                             className="h-full w-full object-cover"
+                                            unoptimized
                                         />
                                     </div>
                                 ))}
@@ -332,6 +334,7 @@ export default function ProductDetail({ params }: { params: Promise<{ lang: stri
                                             width={600}
                                             height={450}
                                             className="h-full w-full object-cover group-hover:scale-105 transition"
+                                            unoptimized
                                         />
                                     </div>
                                     <div className="mt-2 text-sm">
